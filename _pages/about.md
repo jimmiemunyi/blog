@@ -4,10 +4,8 @@ title: About Me
 permalink: /about/
 ---
 
-This is where you put the contents of your *About* page. Like all your pages, it's in [Markdown](https://guides.github.com/features/mastering-markdown/) format.
+My Name is Jimmie Munyi. I am hobbyist developer with interested in Machine Learning and Deep Learning. <br/>
 
-This website is powered by **[fastpages](https://github.com/fastai/fastpages)** [^1].
+This is my technical blog where I post everything I encounter in my journey from beginner posts to passion projects. <br/>
 
-
-
-[^1]:a blogging platform that natively supports Jupyter notebooks in addition to other formats.
+I am a student, graduation set for 2021. <br/>

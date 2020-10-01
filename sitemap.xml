@@ -1,14 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
-<loc>https://jimmiemunyi.github.io/blog/begginer/2020/08/24/A-Simple-Snake-Classifier.html</loc>
-<lastmod>2020-08-24T00:00:00-05:00</lastmod>
-</url>
-<url>
-<loc>https://jimmiemunyi.github.io/blog/begginer/2020/08/25/Tammy-Abraham-vs-Callum-Hudson-Odoi-Classifier.html</loc>
-<lastmod>2020-08-25T00:00:00-05:00</lastmod>
-</url>
-<url>
 <loc>https://jimmiemunyi.github.io/blog/begginer/2020/10/02/Transfer-Learning.html</loc>
 <lastmod>2020-10-02T00:00:00-05:00</lastmod>
 </url>

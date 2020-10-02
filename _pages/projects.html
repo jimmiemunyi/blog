@@ -1,0 +1,24 @@
+---
+layout: default
+permalink: /projects/
+title: Projects
+search_exclude: true
+---
+<h1>Stuff I created</h1>
+
+{% for post in site.categories["projects"] %}
+<ul class="post-list">
+    {% if post.hide != true %}
+        {%- assign date_format = site.minima.date_format | default: "%b %-d, %Y" -%}
+            <li>
+                <div class="roundbox">
+                  {%- if site.show_image -%}
+                      {%- include post_list_image_card.html -%}
+                  {% else %}
+                      {%- include post_list.html -%}
+                  {%- endif -%}
+                </div>
+              </li>
+    {% endif %}
+</ul>
+{% endfor %}

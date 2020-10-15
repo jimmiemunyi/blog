@@ -440,7 +440,7 @@ imbalance problem in convolutional neural networks</a> that studies the problem 
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>For the Data Augmentations, we have to be careful to pick the ones that make sense for our X-Ray data. I picked Rotate and Zoom. If you think about it, transforms like flipping the image won't be useful since our body parts are in specific locations. e.g our liver is one the right, and flipping the X-Ray would take it to the opposite side.</p>
-<p>I also utilize a nifty trick called Presizing from the fastai team. The basic idea behind this approach is this: We first resize the image to a bigger size, bigger than what we want for the final image. For instance, here, I resize the image to 512x512 first, then later on, resize it to 224x224 and at the same time, apply all the augmentaions at once. That is the most important point, applying the final resize and the transforms at the same time, preferably as a batch transform on the GPU. This helps in a higher quality image after, let's say, applying them one by one, which may degrade the data. To learn more about presizing, check out his <a href="https://github.com/fastai/fastbook/blob/master/05_pet_breeds.ipynb">notebook</a>.</p>
+<p>I also utilize a nifty trick called Presizing from the fastai team. The basic idea behind this approach is this: We first resize the image to a bigger size, bigger than what we want for the final image. For instance, here, I resize the image to 460x460 first, then later on, resize it to 224x224 and at the same time, apply all the augmentaions at once. That is the most important point, applying the final resize and the transforms at the same time, preferably as a batch transform on the GPU. This helps in a higher quality image than insted, let's say, applying them one by one, which may degrade the data. To learn more about presizing, check out his <a href="https://github.com/fastai/fastbook/blob/master/05_pet_breeds.ipynb">notebook</a>.</p>
 
 </div>
 </div>
@@ -474,7 +474,7 @@ imbalance problem in convolutional neural networks</a> that studies the problem 
     <span class="n">get_items</span><span class="o">=</span><span class="n">get_image_files</span><span class="p">,</span>
     <span class="n">get_y</span><span class="o">=</span><span class="n">parent_label</span><span class="p">,</span>
     <span class="n">splitter</span><span class="o">=</span><span class="n">GrandparentSplitter</span><span class="p">(</span><span class="n">train_name</span><span class="o">=</span><span class="s1">&#39;train&#39;</span><span class="p">,</span> <span class="n">valid_name</span><span class="o">=</span><span class="s1">&#39;val&#39;</span><span class="p">),</span>
-    <span class="n">item_tfms</span><span class="o">=</span><span class="n">Resize</span><span class="p">(</span><span class="mi">512</span><span class="p">),</span>
+    <span class="n">item_tfms</span><span class="o">=</span><span class="n">Resize</span><span class="p">(</span><span class="mi">460</span><span class="p">),</span>
     <span class="n">batch_tfms</span><span class="o">=</span><span class="n">augs</span>
 <span class="p">)</span>
 </pre></div>
@@ -592,7 +592,7 @@ imbalance problem in convolutional neural networks</a> that studies the problem 
 
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>We use another great tool by fastai that helps us get the optimal learning rate to use. Something around 1x10<sup>-2</sup> will work okay. (The bottom scale is Logarithmic)</p>
+<p>We use another great tool by fastai that helps us get the optimal learning rate to use. Something around 1x10<sup>-2</sup> will work okay according to the plot. (The bottom scale is Logarithmic)</p>
 
 </div>
 </div>
@@ -652,7 +652,7 @@ imbalance problem in convolutional neural networks</a> that studies the problem 
 
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Let me explain, what happens in the next few cells. In Transfer Learning, we need to retain the knowledge learned by the pretrained model. So what happens is, we freeze all the earlier layers and chop off the last classification layer and replace it with a layer with random weights and the correct number outputs, two in this case(it is done by default in fastai when creating the learner through the cnn_learner() model).</p>
+<p>Let me explain, what happens in the next few cells. In Transfer Learning, we need to retain the knowledge learned by the pretrained model. So what happens is, we freeze all the earlier layers and chop off the last classification layer and replace it with a layer with random weights and the correct number outputs, two in this case(it is done by default in fastai when creating the learner through the cnn_learner method).</p>
 <p>So, first we train the final layer (with random weights) for 3 epochs, with the one cycle training policy. Then we unfreeze the whole model, find the new suitable learning rate (because we are now updating all the weights) and train for a further 3 epochs.</p>
 
 </div>
@@ -949,7 +949,7 @@ dominant in almost all analyzed scenarios was <strong>oversampling</strong>.</li
 <li>Oversampling should be applied to the level that completely eliminates the imbalance.</li>
 <li>Oversampling does not cause overtting of convolutional neural networks.</li>
 </ul>
-<p>Basically, Oversampling is artificially making the minority class bigger by replicating it a couple of times. The paper recommends we replicate it until is completely eliminates the imbalance, therefore, our new oversampled 'NORMAL' class is going to be the original images, repeated three times.</p>
+<p>Basically, Oversampling is artificially making the minority class bigger by replicating it a couple of times. The paper recommends we replicate it until is completely eliminates the imbalance, therefore, our new oversampled 'NORMAL' class is going to be the original images, repeated three times. And we don't have to worry about overfitting of our model too!</p>
 
 </div>
 </div>
@@ -1403,7 +1403,7 @@ dominant in almost all analyzed scenarios was <strong>oversampling</strong>.</li
 
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>99.5% accuracy after 4 epochs looks good, looks like our model generalizes well.</p>
+<p>99.5% accuracy after 5 epochs looks good, looks like our model generalizes well.</p>
 <p>See you next time!</p>
 
 </div>

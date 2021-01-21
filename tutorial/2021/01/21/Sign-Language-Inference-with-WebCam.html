@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="twitter:card" content="summary" /><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Sign Language Classification - Part B | Jimmie Munyi</title>
+<meta name="generator" content="Jekyll v4.0.0" />
+<meta property="og:title" content="Sign Language Classification - Part B" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Creating an App to Run Inference with." />
+<meta property="og:description" content="Creating an App to Run Inference with." />
+<link rel="canonical" href="https://jimmiemunyi.github.io/blog/tutorial/2021/01/21/Sign-Language-Inference-with-WebCam.html" />
+<meta property="og:url" content="https://jimmiemunyi.github.io/blog/tutorial/2021/01/21/Sign-Language-Inference-with-WebCam.html" />
+<meta property="og:site_name" content="Jimmie Munyi" />
+<meta property="og:image" content="https://jimmiemunyi.github.io/blog/images/header-asl.jpg" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2021-01-21T00:00:00-06:00" />
+<script type="application/ld+json">
+{"description":"Creating an App to Run Inference with.","@type":"BlogPosting","headline":"Sign Language Classification - Part B","url":"https://jimmiemunyi.github.io/blog/tutorial/2021/01/21/Sign-Language-Inference-with-WebCam.html","datePublished":"2021-01-21T00:00:00-06:00","dateModified":"2021-01-21T00:00:00-06:00","image":"https://jimmiemunyi.github.io/blog/images/header-asl.jpg","mainEntityOfPage":{"@type":"WebPage","@id":"https://jimmiemunyi.github.io/blog/tutorial/2021/01/21/Sign-Language-Inference-with-WebCam.html"},"@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/blog/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://jimmiemunyi.github.io/blog/feed.xml" title="Jimmie Munyi" /><link rel="shortcut icon" type="image/x-icon" href="/blog/images/favicon.ico"><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Sign Language Classification - Part B | Jimmie Munyi</title>
+<meta name="generator" content="Jekyll v4.0.0" />
+<meta property="og:title" content="Sign Language Classification - Part B" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Creating an App to Run Inference with." />
+<meta property="og:description" content="Creating an App to Run Inference with." />
+<link rel="canonical" href="https://jimmiemunyi.github.io/blog/tutorial/2021/01/21/Sign-Language-Inference-with-WebCam.html" />
+<meta property="og:url" content="https://jimmiemunyi.github.io/blog/tutorial/2021/01/21/Sign-Language-Inference-with-WebCam.html" />
+<meta property="og:site_name" content="Jimmie Munyi" />
+<meta property="og:image" content="https://jimmiemunyi.github.io/blog/images/header-asl.jpg" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2021-01-21T00:00:00-06:00" />
+<script type="application/ld+json">
+{"description":"Creating an App to Run Inference with.","@type":"BlogPosting","headline":"Sign Language Classification - Part B","url":"https://jimmiemunyi.github.io/blog/tutorial/2021/01/21/Sign-Language-Inference-with-WebCam.html","datePublished":"2021-01-21T00:00:00-06:00","dateModified":"2021-01-21T00:00:00-06:00","image":"https://jimmiemunyi.github.io/blog/images/header-asl.jpg","mainEntityOfPage":{"@type":"WebPage","@id":"https://jimmiemunyi.github.io/blog/tutorial/2021/01/21/Sign-Language-Inference-with-WebCam.html"},"@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+<link href="https://unpkg.com/@primer/css/dist/primer.css" rel="stylesheet" />
+<link rel="stylesheet" href="//use.fontawesome.com/releases/v5.0.7/css/all.css"><link type="application/atom+xml" rel="alternate" href="https://jimmiemunyi.github.io/blog/feed.xml" title="Jimmie Munyi" />
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
+<script type="text/javascript">
+require.config({
+  paths: {
+    jquery: 'https://code.jquery.com/jquery-3.5.0.min',
+    plotly: 'https://cdn.plot.ly/plotly-latest.min'
+  },
+
+  shim: {
+    plotly: {
+      deps: ['jquery'],
+      exports: 'plotly'
+    }
+  }
+});
+</script>
+
+<script>
+function wrap_img(fn) {
+    if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") {
+        var elements = document.querySelectorAll(".post img");
+        Array.prototype.forEach.call(elements, function(el, i) {
+            if (el.getAttribute("title")) {
+                const caption = document.createElement('figcaption');
+                var node = document.createTextNode(el.getAttribute("title"));
+                caption.appendChild(node);
+                const wrapper = document.createElement('figure');
+                wrapper.className = 'image';
+                el.parentNode.insertBefore(wrapper, el);
+                el.parentNode.removeChild(el);
+                wrapper.appendChild(el);
+                wrapper.appendChild(caption);
+            }
+        });
+    } else { document.addEventListener('DOMContentLoaded', fn); }
+}
+window.onload = wrap_img;
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+    // add link icon to anchor tags
+    var elem = document.querySelectorAll(".anchor-link")
+    elem.forEach(e => (e.innerHTML = '<i class="fas fa-link fa-xs"></i>'));
+    });
+</script>
+</head>
+<body><header class="site-header">
+
+    <div class="wrapper"><a class="site-title" rel="author" href="/blog/">Jimmie Munyi</a><nav class="site-nav">
+          <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+          <label for="nav-trigger">
+            <span class="menu-icon">
+              <svg viewBox="0 0 18 15" width="18px" height="15px">
+                <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+              </svg>
+            </span>
+          </label>
+  
+          <div class="trigger">
+            <a class="page-link" href="https://github.com/jimmiemunyi"><svg class="octicon octicon-mark-github octicon octicon-mark-github octicon octicon-mark-github octicon octicon-mark-github" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg></a><a class="page-link" href="/blog/about/">About Me</a><a class="page-link" href="/blog/projects/">Projects</a><a class="page-link" href="/blog/search/">Search</a><a class="page-link" href="/blog/categories/">Tags</a></div>
+        </nav></div>
+  </header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Sign Language Classification - Part B</h1><p class="page-description">Creating an App to Run Inference with.</p><p class="post-meta post-meta-title"><time class="dt-published" datetime="2021-01-21T00:00:00-06:00" itemprop="datePublished">
+        Jan 21, 2021
+      </time>
+       • <span class="read-time" title="Estimated read time">
+    
+    
+      10 min read
+    
+</span></p>
+
+    
+      <p class="category-tags"><i class="fas fa-tags category-tags-icon"></i></i> 
+      
+        <a class="category-tags-link" href="/blog/categories/#tutorial">tutorial</a>
+        
+      
+      </p>
+    
+
+    
+      </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <!--
+#################################################
+### THIS FILE WAS AUTOGENERATED! DO NOT EDIT! ###
+#################################################
+# file to edit: _notebooks/2021-01-21-Sign-Language-Inference-with-WebCam.ipynb
+-->
+
+<div class="container" id="notebook-container">
+        
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Introduction">Introduction<a class="anchor-link" href="#Introduction"> </a></h1>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>After training our model in <a href="https://jimmiemunyi.github.io/blog/tutorial/2021/01/20/Sign-Language-Classification-with-Deep-Learning.html">Part A</a>, we are now going to develop an application to run inference with for new data.</p>
+<p>I am going to be utilizing <code>opencv</code> to get live video from my webcam, then run our model against each frame in the video and get the prediction of what Sign Language Letter I am holding up.</p>
+<p>Here is an example of what the output will look like:</p>
+<p><img src="/blog/images/copied_from_nb/images/post-signlanguage/sign-language-okay.gif" alt="Output Video" /></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>This tutorial assumes some basic understanding of the <code>cv2</code> library and general understanding of how to run inference using a model.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="The-Full-Code">The Full Code<a class="anchor-link" href="#The-Full-Code"> </a></h1>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Here is the full code of making the App if you just want the code.</p>
+<p>I will explain each part of the code and what was my thinkinh behind it in the next section.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">deque</span><span class="p">,</span> <span class="n">Counter</span>
+
+<span class="kn">import</span> <span class="nn">cv2</span>
+<span class="kn">from</span> <span class="nn">fastai.vision.all</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Loading our Inference model...&#39;</span><span class="p">)</span>
+<span class="c1"># load our inference model</span>
+<span class="n">inf_model</span> <span class="o">=</span> <span class="n">load_learner</span><span class="p">(</span><span class="s1">&#39;model/sign_language.pkl&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Model Loaded&#39;</span><span class="p">)</span>
+
+
+<span class="c1"># define a deque to get rolling average of predictions</span>
+<span class="c1"># I go with the last 10 predictions</span>
+<span class="n">rolling_predictions</span> <span class="o">=</span> <span class="n">deque</span><span class="p">([],</span> <span class="n">maxlen</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="c1"># get the most common item in the deque</span>
+<span class="k">def</span> <span class="nf">most_common</span><span class="p">(</span><span class="n">D</span><span class="p">):</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">(</span><span class="n">D</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">most_common</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">hand_area</span><span class="p">(</span><span class="n">img</span><span class="p">):</span>
+    <span class="c1"># specify where hand should go</span>
+    <span class="n">hand</span> <span class="o">=</span> <span class="n">img</span><span class="p">[</span><span class="mi">50</span><span class="p">:</span><span class="mi">324</span><span class="p">,</span> <span class="mi">50</span><span class="p">:</span><span class="mi">324</span><span class="p">]</span>
+    <span class="c1"># the images in the model were trainind on 200x200 pixels</span>
+    <span class="n">hand</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">hand</span><span class="p">,</span> <span class="p">(</span><span class="mi">200</span><span class="p">,</span><span class="mi">200</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">hand</span>
+
+<span class="c1"># capture video on the webcam</span>
+<span class="n">cap</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">VideoCapture</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+
+<span class="c1"># get the dimensions on the frame</span>
+<span class="n">frame_width</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">cap</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+<span class="n">frame_height</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">cap</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span>
+
+<span class="c1"># define codec and create our VideoWriter to save the video</span>
+<span class="n">fourcc</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">VideoWriter_fourcc</span><span class="p">(</span><span class="o">*</span><span class="s1">&#39;mp4v&#39;</span><span class="p">)</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">VideoWriter</span><span class="p">(</span><span class="s1">&#39;output/sign-language.mp4&#39;</span><span class="p">,</span> <span class="n">fourcc</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="p">(</span><span class="n">frame_width</span><span class="p">,</span> <span class="n">frame_height</span><span class="p">))</span>
+
+
+<span class="c1"># read video</span>
+<span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+    <span class="c1"># capture each frame of the video</span>
+    <span class="n">ret</span><span class="p">,</span> <span class="n">frame</span> <span class="o">=</span> <span class="n">cap</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+    <span class="c1"># flip frame to feel more &#39;natural&#39; to webcam</span>
+    <span class="n">frame</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">flipCode</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># draw a blue rectangle where to place hand</span>
+    <span class="n">cv2</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">50</span><span class="p">),</span> <span class="p">(</span><span class="mi">324</span><span class="p">,</span> <span class="mi">324</span><span class="p">),</span> <span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="c1"># get the image</span>
+    <span class="n">inference_image</span> <span class="o">=</span> <span class="n">hand_area</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+
+    <span class="c1"># get the current prediction on the hand</span>
+    <span class="n">pred</span> <span class="o">=</span> <span class="n">inf_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">inference_image</span><span class="p">)</span>
+    <span class="c1"># append the current prediction to our rolling predictions</span>
+    <span class="n">rolling_predictions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pred</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="c1"># our prediction is going to be the most common letter</span>
+    <span class="c1"># in our rolling predictions</span>
+    <span class="n">prediction_output</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;The predicted letter is </span><span class="si">{</span><span class="n">most_common</span><span class="p">(</span><span class="n">rolling_predictions</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
+
+    <span class="c1"># show predicted text</span>
+    <span class="n">cv2</span><span class="o">.</span><span class="n">putText</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">prediction_output</span><span class="p">,</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">350</span><span class="p">),</span> <span class="n">cv2</span><span class="o">.</span><span class="n">FONT_HERSHEY_SIMPLEX</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="c1"># show the frame</span>
+    <span class="n">cv2</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="s1">&#39;frame&#39;</span><span class="p">,</span> <span class="n">frame</span><span class="p">)</span>
+    <span class="c1"># save the frames to out file</span>
+    <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+
+
+    <span class="c1"># press `q` to exit</span>
+    <span class="k">if</span> <span class="n">cv2</span><span class="o">.</span><span class="n">waitKey</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xFF</span> <span class="o">==</span> <span class="nb">ord</span><span class="p">(</span><span class="s1">&#39;q&#39;</span><span class="p">):</span>
+        <span class="k">break</span>
+
+<span class="c1"># release VideoCapture()</span>
+<span class="n">cap</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+<span class="c1"># release out file</span>
+<span class="n">out</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+<span class="c1"># close all frames and video windows</span>
+<span class="n">cv2</span><span class="o">.</span><span class="n">destroyAllWindows</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Explaining-the-Code">Explaining the Code<a class="anchor-link" href="#Explaining-the-Code"> </a></h1>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Imports">Imports<a class="anchor-link" href="#Imports"> </a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Install <a href="https://github.com/fastai/fastai">fastai</a> and <a href="https://pypi.org/project/opencv-python/">opencv-python</a>.</p>
+<p>Next, this are the packages I utilize for this App. <code>fastai</code> is going to be used to run Inference with, <code>cv2</code> is going to handle all the WebCam functionality and we are going to utilize <code>deque</code> and <code>Counter</code> from collections to apply a nifty trick I am going to show you.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">deque</span><span class="p">,</span> <span class="n">Counter</span>
+
+<span class="kn">import</span> <span class="nn">cv2</span>
+<span class="kn">from</span> <span class="nn">fastai.vision.all</span> <span class="kn">import</span> <span class="o">*</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Loading-our-Inference-Model">Loading our Inference Model<a class="anchor-link" href="#Loading-our-Inference-Model"> </a></h2>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Loading our Inference model...&#39;</span><span class="p">)</span>
+<span class="c1"># load our inference model</span>
+<span class="n">inf_model</span> <span class="o">=</span> <span class="n">load_learner</span><span class="p">(</span><span class="s1">&#39;model/sign_language.pkl&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Model Loaded&#39;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The next part of our code loads the model we pickled in Part A and prints some useful information.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Rolling-Average-Predictions">Rolling Average Predictions<a class="anchor-link" href="#Rolling-Average-Predictions"> </a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>When I first made the App, I noticed one problem when using it. A slight movement of my hand was changing the predictions. This is known as <code>flickering</code>. The video below shows how flickering affects our App:</p>
+<p><img src="/blog/images/copied_from_nb/images/post-signlanguage/sign-language-flickering.gif" alt="Output Video Flickering" /></p>
+<p>The Video you saw in the beginning shows how 'stable' our model is after using rolling predictions.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># define a deque to get rolling average of predictions</span>
+<span class="c1"># I go with the last 10 predictions</span>
+<span class="n">rolling_predictions</span> <span class="o">=</span> <span class="n">deque</span><span class="p">([],</span> <span class="n">maxlen</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="c1"># get the most common item in the deque</span>
+<span class="k">def</span> <span class="nf">most_common</span><span class="p">(</span><span class="n">D</span><span class="p">):</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">(</span><span class="n">D</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">most_common</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>To solve this, a utilized the deque from Collections. I used 10 as the maxlength of the deque since I wanted the App, when running inference, to output the most common prediction out of the last 10 predictions. This makes it more stable than when we are using only the current one.</p>
+<p>The function <code>most_common</code> will return the most common item in our deque.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Hand-Area">Hand Area<a class="anchor-link" href="#Hand-Area"> </a></h2>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">hand_area</span><span class="p">(</span><span class="n">img</span><span class="p">):</span>
+    <span class="c1"># specify where hand should go</span>
+    <span class="n">hand</span> <span class="o">=</span> <span class="n">img</span><span class="p">[</span><span class="mi">50</span><span class="p">:</span><span class="mi">324</span><span class="p">,</span> <span class="mi">50</span><span class="p">:</span><span class="mi">324</span><span class="p">]</span>
+    <span class="c1"># the images in the model were trainind on 200x200 pixels</span>
+    <span class="n">hand</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">hand</span><span class="p">,</span> <span class="p">(</span><span class="mi">200</span><span class="p">,</span><span class="mi">200</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">hand</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Next, we define a function that tells our model which part of the video to run inference on. We do not want to run inference on the whole video which will include our face! We will eventually draw a blue rectangle in this area so that you'll know where to place your hand.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Capture-Video-on-the-WebCam-and-Define-Our-Writer">Capture Video on the WebCam and Define Our Writer<a class="anchor-link" href="#Capture-Video-on-the-WebCam-and-Define-Our-Writer"> </a></h2>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># capture video on the webcam</span>
+<span class="n">cap</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">VideoCapture</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="c1"># get the dimensions on the frame</span>
+<span class="n">frame_width</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">cap</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+<span class="n">frame_height</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">cap</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span>
+
+<span class="c1"># define codec and create our VideoWriter to save the video</span>
+<span class="n">fourcc</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">VideoWriter_fourcc</span><span class="p">(</span><span class="o">*</span><span class="s1">&#39;mp4v&#39;</span><span class="p">)</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">VideoWriter</span><span class="p">(</span><span class="s1">&#39;sign-language.mp4&#39;</span><span class="p">,</span> <span class="n">fourcc</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="p">(</span><span class="n">frame_width</span><span class="p">,</span> <span class="n">frame_height</span><span class="p">))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Here, we define a <code>VideoCapture</code> that will record our video. The parameter 0 means capture on the first WebCam it finds. If you have multiple WebCams, this is the parameter you want to play around with until you find the correct one.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Next, we get the dimensions of the frame being recorded by the VideoCapture. We are going to use this dimensions when writing (outputting) the recorded video</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Finally, we create a <code>VideoWriter</code> that we are going to use to output the video and write it to our Hard Disk. To do that, opencv requires us to define a codec to use, and so we create a <code>VideoWriter_fourcc</code> exactly for that purpose and we use 'mp4v' with it.</p>
+<p>In our writer, we first pass the name we want for the output file, here I use 'sign-language.mp4' which will be written in the current directory. You can change this location if you wish to. Next we pass in the codec. After that you pass in your fps (frame rate per second). I found that 12 worked best with my configuration but you probably want to play around with that until you get the best one for you. Finally, we pass in the frame sizes, which we had gotten earlier.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="The-Main-Video-Loop">The Main Video Loop<a class="anchor-link" href="#The-Main-Video-Loop"> </a></h2>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># read video</span>
+<span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+    <span class="c1"># capture each frame of the video</span>
+    <span class="n">ret</span><span class="p">,</span> <span class="n">frame</span> <span class="o">=</span> <span class="n">cap</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+    <span class="c1"># flip frame to feel more &#39;natural&#39; to webcam</span>
+    <span class="n">frame</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">flipCode</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># draw a blue rectangle where to place hand</span>
+    <span class="n">cv2</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">50</span><span class="p">),</span> <span class="p">(</span><span class="mi">324</span><span class="p">,</span> <span class="mi">324</span><span class="p">),</span> <span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="c1"># get the image</span>
+    <span class="n">inference_image</span> <span class="o">=</span> <span class="n">hand_area</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+
+    <span class="c1"># get the current prediction on the hand</span>
+    <span class="n">pred</span> <span class="o">=</span> <span class="n">inf_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">inference_image</span><span class="p">)</span>
+    <span class="c1"># append the current prediction to our rolling predictions</span>
+    <span class="n">rolling_predictions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pred</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="c1"># our prediction is going to be the most common letter</span>
+    <span class="c1"># in our rolling predictions</span>
+    <span class="n">prediction_output</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;The predicted letter is </span><span class="si">{</span><span class="n">most_common</span><span class="p">(</span><span class="n">rolling_predictions</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
+
+    <span class="c1"># show predicted text</span>
+    <span class="n">cv2</span><span class="o">.</span><span class="n">putText</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">prediction_output</span><span class="p">,</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">350</span><span class="p">),</span> <span class="n">cv2</span><span class="o">.</span><span class="n">FONT_HERSHEY_SIMPLEX</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="c1"># show the frame</span>
+    <span class="n">cv2</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="s1">&#39;frame&#39;</span><span class="p">,</span> <span class="n">frame</span><span class="p">)</span>
+    <span class="c1"># save the frames to out file</span>
+    <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+
+
+    <span class="c1"># press `q` to exit</span>
+    <span class="k">if</span> <span class="n">cv2</span><span class="o">.</span><span class="n">waitKey</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xFF</span> <span class="o">==</span> <span class="nb">ord</span><span class="p">(</span><span class="s1">&#39;q&#39;</span><span class="p">):</span>
+        <span class="k">break</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>This is a long piece of code so lets break it down bit by bit:</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># read video</span>
+<span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+    <span class="c1"># capture each frame of the video</span>
+    <span class="n">_</span> <span class="p">,</span> <span class="n">frame</span> <span class="o">=</span> <span class="n">cap</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+    <span class="c1"># flip frame to feel more &#39;natural&#39; to webcam</span>
+    <span class="n">frame</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">flipCode</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+    
+
+
+    <span class="c1"># ......</span>
+    <span class="c1"># truncated code here</span>
+    <span class="c1"># ......</span>
+
+
+
+    
+    <span class="c1"># show the frame</span>
+    <span class="n">cv2</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="s1">&#39;frame&#39;</span><span class="p">,</span> <span class="n">frame</span><span class="p">)</span>
+    <span class="c1"># save the frames to out file</span>
+    <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+
+
+    <span class="c1"># press `q` to exit</span>
+    <span class="k">if</span> <span class="n">cv2</span><span class="o">.</span><span class="n">waitKey</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xFF</span> <span class="o">==</span> <span class="nb">ord</span><span class="p">(</span><span class="s1">&#39;q&#39;</span><span class="p">):</span>
+        <span class="k">break</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We create a infinite While loop that will always be running, until the user presses the 'q' letter on the keyboard, as defined by our last if statement at the very bottom of the loop.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>After that, we use the reader we created earlier and call <code>cap.read()</code> on it which returns the current frame of the video, and another variable that we are not going to use.</p>
+<p>A little intuition how videos works. A frame is somewhat equivalent to just one static image. Think of it as that. So for a video what usually happens it these single frames are played one after the other quickly, like 30-60 times faster hence creating the illusion of a continious video.</p>
+<p>So for our App, we are going to get each frame, and run it through our model (which expects the input to be an image, so this will work) and return the current prediction. This is also why we decided to use rolling average predictions and not the just the current prediction. To reduce the flickering that may occur by passing a different frame each second.</p>
+<p>Next:</p>
+
+<pre><code>    frame = cv2.flip(frame, flipCode = 1)</code></pre>
+<p>This flips our frame to make it feel more natural. What I mean is, without flipping, the output image felt reversed, where if I raised my left arm it seemed like I was raising my right. Try running the App with this part commented out and you'll get what I mean.</p>
+<p>This shows the frames one after the other and the out writes it to disk</p>
+
+<pre><code>    cv2.imshow('frame', frame)
+    # save the frames to out file
+    out.write(frame)</code></pre>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># read video</span>
+<span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+    <span class="c1"># ......</span>
+    <span class="c1"># truncated code here</span>
+    <span class="c1"># ......</span>
+
+    <span class="c1"># draw a blue rectangle where to place hand</span>
+    <span class="n">cv2</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">50</span><span class="p">),</span> <span class="p">(</span><span class="mi">324</span><span class="p">,</span> <span class="mi">324</span><span class="p">),</span> <span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="c1"># get the image</span>
+    <span class="n">inference_image</span> <span class="o">=</span> <span class="n">hand_area</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+
+    <span class="c1"># get the current prediction on the hand</span>
+    <span class="n">pred</span> <span class="o">=</span> <span class="n">inf_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">inference_image</span><span class="p">)</span>
+    <span class="c1"># append the current prediction to our rolling predictions</span>
+    <span class="n">rolling_predictions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pred</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="c1"># our prediction is going to be the most common letter</span>
+    <span class="c1"># in our rolling predictions</span>
+    <span class="n">prediction_output</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;The predicted letter is </span><span class="si">{</span><span class="n">most_common</span><span class="p">(</span><span class="n">rolling_predictions</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
+
+    <span class="c1"># show predicted text</span>
+    <span class="n">cv2</span><span class="o">.</span><span class="n">putText</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">prediction_output</span><span class="p">,</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">350</span><span class="p">),</span> <span class="n">cv2</span><span class="o">.</span><span class="n">FONT_HERSHEY_SIMPLEX</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
+
+
+    <span class="c1"># ......</span>
+    <span class="c1"># truncated code here</span>
+    <span class="c1"># ......</span>
+
+
+    <span class="c1"># press `q` to exit</span>
+    <span class="k">if</span> <span class="n">cv2</span><span class="o">.</span><span class="n">waitKey</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xFF</span> <span class="o">==</span> <span class="nb">ord</span><span class="p">(</span><span class="s1">&#39;q&#39;</span><span class="p">):</span>
+        <span class="k">break</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Next, we draw a blue rectangle where the user should place the hand. The first parameter is where we want to draw the rectangle and we tell opencv to draw it on our current frame. The next two parameter describe the area where we want our rectangle to be. Note that this dimensions are exactly the same as those in the <code>hand_area</code> function we created earlier. This is to make sure we are running inference on the correct area. Lastly we pass in the color of the rectangle (in BGR formart) and the thickness of the line (2).</p>
+
+<pre><code>cv2.rectangle(frame, (50, 50), (324, 324), (255, 0, 0), 2)</code></pre>
+<p>Next, from our whole frame, we just extract the hand area and store it. This is the image we are going to pass to our model</p>
+
+<pre><code>inference_image = hand_area(frame)</code></pre>
+<p>Next, we pass our extracted image to our inference model and get the predictions and append that prediction to our rolling predictions deque. Remember that this deque will only hold the most recent 10 predictions and discard everything else</p>
+
+<pre><code>pred = inf_model.predict(inference_image)
+
+rolling_predictions.append(pred[0])</code></pre>
+<p>We get the most common Letter predicted in our Deque and use opencv to write that letter to the video. The parameters are almost similar to the rectangle code, with a slight variation since here we have to pass in the font(hershey simplex) and font size (0.9)</p>
+
+<pre><code>prediction_output = f'The predicted letter is {most_common(rolling_predictions)}'
+
+cv2.putText(frame, prediction_output, (10, 350), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)</code></pre>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The final part of the code just releases the resources we had acquired initially: the Video reader, the Video Writer and then destroys all windows created.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># release VideoCapture()</span>
+<span class="n">cap</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+<span class="c1"># release out file</span>
+<span class="n">out</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+<span class="c1"># close all frames and video windows</span>
+<span class="n">cv2</span><span class="o">.</span><span class="n">destroyAllWindows</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>And that's all in Part B. Hope you enjoyed it. The whole code + training notebooks from Part A can be found in this <a href="https://github.com/jimmiemunyi/Sign-Language-App">github repo</a>.</p>
+
+</div>
+</div>
+</div>
+</div>
+
+
+
+  </div><!-- from https://github.com/utterance/utterances -->
+<script src="https://utteranc.es/client.js"
+        repo="jimmiemunyi/blog"
+        issue-term="title"
+        label="blogpost-comment"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script><a class="u-url" href="/blog/tutorial/2021/01/21/Sign-Language-Inference-with-WebCam.html" hidden></a>
+</article>
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/blog/"></data>
+
+  <div class="wrapper">
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/blog/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/blog/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p>
+          <a href="https://www.buymeacoffee.com/jimmiemunyi" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-blue.png" alt="Buy Me A Coffee" width="200px"></a>
+        </p>
+        <p>
+          Built using <a href="https://github.com/fastai/fastpages"><img src="/blog/images/fastai.png">fastpages</a>
+       </p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/jimmiemunyi" title="jimmiemunyi"><svg class="svg-icon grey"><use xlink:href="/blog/assets/minima-social-icons.svg#github"></use></svg></a></li><li><a rel="me" href="https://twitter.com/jimmie_munyi" title="jimmie_munyi"><svg class="svg-icon grey"><use xlink:href="/blog/assets/minima-social-icons.svg#twitter"></use></svg></a></li></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

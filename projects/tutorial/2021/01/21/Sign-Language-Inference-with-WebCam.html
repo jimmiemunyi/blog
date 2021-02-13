@@ -159,8 +159,19 @@ window.onload = wrap_img;
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>After training our model in <a href="https://jimmiemunyi.github.io/blog/tutorial/2021/01/20/Sign-Language-Classification-with-Deep-Learning.html">Part A</a>, we are now going to develop an application to run inference with for new data.</p>
 <p>I am going to be utilizing <code>opencv</code> to get live video from my webcam, then run our model against each frame in the video and get the prediction of what Sign Language Letter I am holding up.</p>
-<p>Here is an example of what the output will look like:</p>
-<p><img src="/blog/images/copied_from_nb/images/post-signlanguage/sign-language-okay.gif" alt="Output Video" /></p>
+<p>Here is an example of what the output will look like:
+
+<center>
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/-nggi8EwfOA" frameborder="0" allowfullscreen=""></iframe>
+</center>
+</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The whole code + training notebooks from Part A can be found in this <a href="https://github.com/jimmiemunyi/Sign-Language-App">github repo</a>.</p>
 
 </div>
 </div>
@@ -725,19 +736,7 @@ cv2.putText(frame, prediction_output, (10, 350), cv2.FONT_HERSHEY_SIMPLEX, 0.9, 
 
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Here is the final Video:
-
-<center>
-    <iframe width="560" height="315" src="https://www.youtube.com/embed/-nggi8EwfOA" frameborder="0" allowfullscreen=""></iframe>
-</center>
-</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>And that's all in Part B. Hope you enjoyed it. The whole code + training notebooks from Part A can be found in this <a href="https://github.com/jimmiemunyi/Sign-Language-App">github repo</a>.</p>
+<p>And that's all in Part B. Hope you enjoyed it.</p>
 
 </div>
 </div>
